@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import GW2Api from '../GW2Api';
+import BL from '../BusinessLogic';
 import RecipeDetails from './RecipeDetails';
 
 export default class ItemDetails extends Component {
@@ -10,6 +11,10 @@ export default class ItemDetails extends Component {
             data: null,
             recipes: []
         };
+    }
+
+    componentDidMount() {
+        this.retrieveDetails();
     }
 
     render() {
@@ -37,32 +42,37 @@ export default class ItemDetails extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.item !== this.props.item) {
-            GW2Api.getItem(this.props.item).then((data) => {
-                this.setState({
-                    data: data
-                });
-            });
-            GW2Api.getCommerceListings(this.props.item).then((data) => {
-                this.setState({
-                    listings: data
-                });
-            });
-            this.setState({
-                recipes: []
-            }, () => {
-                GW2Api.searchRecipe(this.props.item).then((recipes) => {
-                    for (let key in recipes) {
-                        GW2Api.getRecipe(recipes[key]).then((recipe) => {
-                            // console.log(recipe);
-                            this.setState(prevState =>
-                                Object.assign({}, prevState, {
-                                    recipes: [...prevState.recipes, recipe]
-                                })
-                            );
-                        });
-                    }
-                });
-            });
+            this.retrieveDetails();
         }
+    }
+
+    retrieveDetails() {
+        GW2Api.getItem(this.props.item).then((data) => {
+            this.setState({
+                data: data
+            });
+        });
+        GW2Api.getCommerceListings(this.props.item).then((data) => {
+            this.setState({
+                listings: data
+            });
+        });
+        this.setState({
+            recipes: []
+        }, () => {
+            GW2Api.searchRecipe(this.props.item).then((recipes) => {
+                for (let key in recipes) {
+                    GW2Api.getRecipe(recipes[key]).then((recipe) => {
+                        // console.log(recipe);
+                        this.setState(prevState =>
+                            Object.assign({}, prevState, {
+                                recipes: [...prevState.recipes, recipe]
+                            })
+                        );
+                    });
+                    BL.computeProfitableProductQuantity(this.props.item, recipes[key]);
+                }
+            });
+        });
     }
 }
