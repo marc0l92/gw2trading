@@ -70,7 +70,9 @@ export default class ItemDetails extends Component {
                             })
                         );
                     });
-                    BL.computeProfitableProductQuantity(this.props.item, recipes[key]);
+                    BL.computeProfitableProductQuantity(this.props.item, recipes[key]).then(result => {
+                        console.log("result", result);
+                    });
                 }
             });
         });
