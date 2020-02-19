@@ -1,4 +1,4 @@
-import GW2Api from './GW2Api';
+import DB from './Database';
 
 function computeMaxQuantity(productListings, ingredientsListings, recipeIngredients) {
     let maxQuantity = getMaxQuantity(productListings);
@@ -33,15 +33,15 @@ function getTotalAmount(buySellListings, quantity) {
 }
 
 export default {
-    async computeProfitableProductQuantity(productId, recipeId) {
+    async computeProfitableProductQuantity(recipe) {
         // Get product and ingredients listings data
-        let productListings = (await GW2Api.getCommerceListings(productId)).buys;
-        let recipeIngredients = (await GW2Api.getRecipe(recipeId)).ingredients;
+        let recipeIngredients = recipe.ingredients;
+        let productListings = (await DB.getCommerceListings(recipe.output_item_id)).buys;
         let ingredientsListings = {};
 
         for (let key in recipeIngredients) {
             let itemId = recipeIngredients[key].item_id;
-            ingredientsListings[itemId] = (await GW2Api.getCommerceListings(itemId)).sells;
+            ingredientsListings[itemId] = (await DB.getCommerceListings(itemId)).sells;
         }
 
         // Compute max quantity
@@ -49,9 +49,9 @@ export default {
 
         // Compute profitable quantity
         let quantity = 0;
-        let profit = 1;
-        let totalProfit = 0;
-        while (profit > 0 && quantity < maxQuantity) {
+        let profit = 0.5;
+        let prevProfit = 0;
+        while (profit > prevProfit && quantity < maxQuantity) {
             quantity++;
             let income = getTotalAmount(productListings, quantity);
             let expenses = 0;
@@ -59,9 +59,9 @@ export default {
                 let itemId = recipeIngredients[key].item_id;
                 expenses += getTotalAmount(ingredientsListings[itemId], quantity * recipeIngredients[key].count);
             }
+            prevProfit = profit;
             profit = income - expenses;
-            totalProfit += profit;
         }
-        return { quantity: quantity - 1, profit: quantity > 1 ? totalProfit : 0 };
+        return { quantity: quantity - 1, profit: quantity > 1 ? profit : 0 };
     }
 }

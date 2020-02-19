@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import GW2Api from '../GW2Api';
+import DB from '../Database';
 
 export default class SummaryElement extends Component {
     constructor(props) {
@@ -11,7 +11,7 @@ export default class SummaryElement extends Component {
     }
 
     componentDidMount() {
-        GW2Api.getItem(this.state.id).then((data) => {
+        DB.getItem(this.state.id).then((data) => {
             this.setState({
                 name: data.name
             });

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Summary from './Summary/Summary';
 import ItemDetails from './Details/ItemDetails';
 
-const ITEM_IDS = [12178, 12192, 12209];
+const ITEM_IDS = [12178, 12192, 12209, 62885, 73034];
 
 export default class App extends Component {
   constructor(props) {
